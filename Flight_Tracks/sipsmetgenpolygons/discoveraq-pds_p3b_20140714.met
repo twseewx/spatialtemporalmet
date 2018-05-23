@@ -1,0 +1,188 @@
+GROUP = INVENTORYMETADATA
+   GROUPTYPE = MASTERGROUP
+   GROUP = ECSDataGranule
+      OBJECT = LocalGranuleID
+         NUM_VAL = 1
+         VALUE = "ILATM1B_04302012_0911454200"
+      END_OBJECT = LocalGranuleID
+      OBJECT = ProductionDateTime
+         NUM_VAL = 1
+         VALUE = "2018-03-14T14:09:16.000Z"
+      END_OBJECT = ProductionDateTime
+      OBJECT = LocalVersionID
+         NUM_VAL = 1
+         VALUE = "001"
+      END_OBJECT = LocalVersionID
+   END_GROUP = ECSDataGranule
+   GROUP = CollectionDescriptionClass
+      OBJECT = ShortName
+         NUM_VAL = 1
+         VALUE = "ILATM1B"
+      END_OBJECT = ShortName
+      OBJECT = VersionID
+         NUM_VAL = 1
+         VALUE = 1
+      END_OBJECT = VersionID
+   END_GROUP = CollectionDescriptionClass
+   GROUP = SpatialDomainContainer
+      GROUP = HorizontalSpatialDomainContainer
+         GROUP = GPolygon
+            OBJECT = GPolygonContainer
+               CLASS = "1"
+               GROUP = GRing
+                  CLASS = "1"
+                  OBJECT = ExclusionGRingFlag
+                     NUM_VAL = 1
+                     CLASS = "1"
+                     VALUE = "N"
+                  END_OBJECT = ExclusionGRingFlag
+               END_GROUP = GRing
+               GROUP = GRingPoint
+                  CLASS = "1"
+                  OBJECT = GRingPointLongitude
+                     NUM_VAL = 89
+                     CLASS = "1"
+                     VALUE = (-105.17347, -105.02359, -104.72639, -104.24256, -103.34211, -102.47878, -101.69309, -100.79487, -100.42101, -99.52221, 
+-99.07248, -98.17368, -97.27488, -96.37608, -95.47728, -94.57848, -93.79114, -93.11652, -92.36706, -91.54276, 
+-90.68123, -90.11917, -89.55729, -88.92053, -88.24633, -87.3849, -86.4861, -86.29878, -85.39998, -85.063, 
+-84.31408, -83.63984, -83.15306, -82.25423, -81.39305, -80.7565, -80.15742, -79.48331, -78.58499, -77.72501, 
+-76.86557, -76.04463, -75.44972, -75.46822, -75.58753, -75.56659, -75.93485, -76.75483, -77.53932, -78.39885, 
+-79.03439, -79.82086, -80.34499, -80.94404, -81.58055, -82.36687, -83.2657, -83.75268, -84.50154, -85.25043, 
+-86.14923, -86.26169, -87.16049, -87.38532, -88.20937, -88.88363, -89.52046, -90.0824, -90.98141, -91.84322, 
+-92.70537, -93.41753, -94.317, -94.87911, -95.77791, -96.67671, -97.57551, -98.47431, -99.03644, -99.93524, 
+-100.60896, -101.24491, -102.14277, -103.0054, -103.83214, -104.31896, -104.83854, -105.17347, -105.17347)
+                  END_OBJECT = GRingPointLongitude
+                  OBJECT = GRingPointLatitude
+                     NUM_VAL = 89
+                     CLASS = "1"
+                     VALUE = (39.97791, 39.97791, 39.37243, 39.17061, 39.31477, 39.51659, 39.4301, 39.37243, 39.31477, 39.31477, 
+39.3436, 39.3436, 39.3436, 39.3436, 39.3436, 39.3436, 39.4301, 39.48776, 39.54543, 39.60309, 
+39.63192, 39.68959, 39.71842, 39.74725, 39.77609, 39.80492, 39.80492, 39.83375, 39.83375, 39.80492, 
+39.77609, 39.83375, 39.80492, 39.80492, 39.74725, 39.71842, 39.68959, 39.68959, 39.60309, 39.4301, 
+39.2571, 39.05528, 38.82462, 38.13264, 37.93081, 38.62279, 38.91111, 39.14177, 39.28593, 39.45893, 
+39.60309, 39.60309, 39.63192, 39.66076, 39.68959, 39.71842, 39.71842, 39.68959, 39.71842, 39.74725, 
+39.74725, 39.71842, 39.71842, 39.68959, 39.66076, 39.63192, 39.60309, 39.57426, 39.54543, 39.48776, 
+39.40126, 39.3436, 39.28593, 39.2571, 39.2571, 39.2571, 39.2571, 39.2571, 39.22827, 39.22827, 
+39.2571, 39.31477, 39.40126, 39.28593, 39.08411, 39.02644, 39.31477, 39.89141, 39.94908)
+                  END_OBJECT = GRingPointLatitude
+                  OBJECT = GRingPointSequenceNo
+                     NUM_VAL = 89
+                     CLASS = "1"
+                      VALUE = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 
+11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 
+21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 
+31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 
+41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 
+51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 
+61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 
+71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 
+81, 82, 83, 84, 85, 86, 87, 88, 89)
+                  END_OBJECT = GRingPointSequenceNo
+               END_GROUP = GRingPoint
+            END_OBJECT = GPolygonContainer
+         END_GROUP = GPolygon
+      END_GROUP = HorizontalSpatialDomainContainer
+   END_GROUP = SpatialDomainContainer
+   GROUP = CollectionDescriptionClass
+      OBJECT = ShortName
+         NUM_VAL = 1
+         VALUE = "ILATM1B"
+      END_OBJECT = ShortName
+      OBJECT = VersionID
+         NUM_VAL = 1
+         VALUE = 1
+      END_OBJECT = VersionID
+   END_GROUP = CollectionDescriptionClass
+   GROUP = RangeDateTime
+      OBJECT = RangeBeginningDate
+         NUM_VAL = 1
+         VALUE = "2010-04-30"
+      END_OBJECT = RangeBeginningDate
+      OBJECT = RangeBeginningTime
+         NUM_VAL = 1
+         VALUE = "09:11:45.4200"
+      END_OBJECT = RangeBeginningTime
+      OBJECT = RangeEndingDate
+         NUM_VAL = 1
+         VALUE = "2010-04-30"
+      END_OBJECT = RangeEndingDate
+      OBJECT = RangeEndingTime
+         NUM_VAL = 1
+         VALUE = "10:11:44.9900"
+      END_OBJECT = RangeEndingTime
+   END_GROUP = RangeDateTime
+   GROUP = Campaign
+      OBJECT = CampaignShortName
+         NUM_VAL = 1
+         VALUE = ""
+      END_OBJECT = CampaignShortName
+   END_GROUP = Campaign
+   GROUP = AssociatedPlatformInstrumentSensor
+      OBJECT = AssociatedPlatformInstrumentSensorContainer
+         CLASS = "1"
+         OBJECT = AssociatedPlatformShortName
+           CLASS = "1"
+           NUM_VAL = 1
+           VALUE = "P-3B"
+         END_OBJECT = AssociatedPlatformShortName
+         OBJECT = AssociatedInstrumentShortName
+           CLASS = "1"
+           NUM_VAL = 1
+           VALUE = "ATM"
+         END_OBJECT = AssociatedInstrumentShortName
+         OBJECT = AssociatedSensorShortName
+           CLASS = "1"
+           NUM_VAL = 1
+           VALUE = "ATM"
+         END_OBJECT = AssociatedSensorShortName
+      END_OBJECT = AssociatedPlatformInstrumentSensorContainer
+   END_GROUP = AssociatedPlatformInstrumentSensor
+   GROUP = AdditionalAttributes
+      OBJECT = AdditionalAttributesContainer
+         CLASS = "1"
+         OBJECT = AdditionalAttributeName
+            CLASS = "1"
+            NUM_VAL = 1
+            VALUE = "SIPSMetGenVersion"
+         END_OBJECT = AdditionalAttributeName
+         GROUP = InformationContent
+            CLASS = "1"
+            OBJECT = ParameterValue
+               NUM_VAL = 1
+               VALUE = "2.0.1"
+            END_OBJECT = ParameterValue
+         END_GROUP = InformationContent
+      END_OBJECT = AdditionalAttributesContainer
+      OBJECT = AdditionalAttributesContainer
+         CLASS = "2"
+         OBJECT = AdditionalAttributeName
+            CLASS = "2"
+            NUM_VAL = 1
+            VALUE = "ThemeID"
+         END_OBJECT = AdditionalAttributeName
+         GROUP = InformationContent
+            CLASS = "2"
+            OBJECT = ParameterValue
+               NUM_VAL = 1
+               VALUE = "2010_GR_NASA"
+            END_OBJECT = ParameterValue
+         END_GROUP = InformationContent
+      END_OBJECT = AdditionalAttributesContainer
+      OBJECT = AdditionalAttributesContainer
+         CLASS = "3"
+         OBJECT = AdditionalAttributeName
+            CLASS = "3"
+            NUM_VAL = 1
+            VALUE = "AircraftID"
+         END_OBJECT = AdditionalAttributeName
+         GROUP = InformationContent
+            CLASS = "3"
+            OBJECT = ParameterValue
+               NUM_VAL = 1
+               VALUE = "NA72473"
+            END_OBJECT = ParameterValue
+         END_GROUP = InformationContent
+      END_OBJECT = AdditionalAttributesContainer
+   END_GROUP = AdditionalAttributes
+END_GROUP = INVENTORYMETADATA
+END

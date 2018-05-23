@@ -1,0 +1,249 @@
+GROUP = INVENTORYMETADATA
+   GROUPTYPE = MASTERGROUP
+   GROUP = ECSDataGranule
+      OBJECT = LocalGranuleID
+         NUM_VAL = 1
+         VALUE = "ILATM1B_04302012_0911454200"
+      END_OBJECT = LocalGranuleID
+      OBJECT = ProductionDateTime
+         NUM_VAL = 1
+         VALUE = "2018-03-01T13:45:41.000Z"
+      END_OBJECT = ProductionDateTime
+      OBJECT = LocalVersionID
+         NUM_VAL = 1
+         VALUE = "001"
+      END_OBJECT = LocalVersionID
+   END_GROUP = ECSDataGranule
+   GROUP = CollectionDescriptionClass
+      OBJECT = ShortName
+         NUM_VAL = 1
+         VALUE = "ILATM1B"
+      END_OBJECT = ShortName
+      OBJECT = VersionID
+         NUM_VAL = 1
+         VALUE = 1
+      END_OBJECT = VersionID
+   END_GROUP = CollectionDescriptionClass
+   GROUP = SpatialDomainContainer
+      GROUP = HorizontalSpatialDomainContainer
+         GROUP = GPolygon
+            OBJECT = GPolygonContainer
+               CLASS = "1"
+               GROUP = GRing
+                  CLASS = "1"
+                  OBJECT = ExclusionGRingFlag
+                     NUM_VAL = 1
+                     CLASS = "1"
+                     VALUE = "N"
+                  END_OBJECT = ExclusionGRingFlag
+               END_GROUP = GRing
+               GROUP = GRingPoint
+                  CLASS = "1"
+                  OBJECT = GRingPointLongitude
+                     NUM_VAL = 45
+                     CLASS = "1"
+                     VALUE = (-75.86911, -75.79436, -75.79577, -76.01974, -76.17847, -76.19734, -76.38426, -76.43131, -76.30168, -76.31166, 
+-76.38762, -76.34171, -76.12818, -75.91446, -75.71948, -75.52491, -75.49744, -75.4912, -75.47608, -75.44262, 
+-75.42717, -75.46469, -75.60192, -75.76649, -75.92197, -75.96787, -76.12372, -76.14216, -76.29828, -76.33511, 
+-76.50081, -76.65749, -76.77746, -76.86991, -76.9903, -76.9903, -76.83246, -76.74845, -76.74808, -76.58911, 
+-76.38373, -76.23438, -76.01974, -75.91708, -75.87975)
+                  END_OBJECT = GRingPointLongitude
+                  OBJECT = GRingPointLatitude
+                     NUM_VAL = 45
+                     CLASS = "1"
+                     VALUE = (39.7181, 39.7181, 39.63156, 39.58829, 39.52339, 39.44406, 39.37916, 39.30704, 39.16281, 39.0907, 
+38.92483, 38.85993, 38.80945, 38.76618, 38.70848, 38.62916, 38.60031, 38.44166, 38.26858, 38.0955, 
+37.95127, 37.92964, 38.01618, 38.13877, 38.26137, 38.29022, 38.41281, 38.42002, 38.54262, 38.56425, 
+38.68685, 38.80945, 38.91762, 38.98252, 39.00416, 39.04743, 39.17002, 39.27098, 39.40079, 39.50175, 
+39.55223, 39.61714, 39.66762, 39.69647, 39.71089)
+                  END_OBJECT = GRingPointLatitude
+                  OBJECT = GRingPointSequenceNo
+                     NUM_VAL = 45
+                     CLASS = "1"
+                      VALUE = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 
+11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 
+21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 
+31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 
+41, 42, 43, 44, 45)
+                  END_OBJECT = GRingPointSequenceNo
+               END_GROUP = GRingPoint
+            END_OBJECT = GPolygonContainer
+            OBJECT = GPolygonContainer
+               CLASS = "2"
+               GROUP = GRing
+                  CLASS = "2"
+                  OBJECT = ExclusionGRingFlag
+                     NUM_VAL = 1
+                     CLASS = "2"
+                     VALUE = "Y"
+                  END_OBJECT = ExclusionGRingFlag
+               END_GROUP = GRing
+               GROUP = GRingPoint
+                  CLASS = "2"
+                  OBJECT = GRingPointLongitude
+                     NUM_VAL = 25
+                     CLASS = "2"
+                     VALUE = (-76.28107, -76.2252, -76.31859, -76.40278, -76.48703, -76.53395, -76.45032, -76.37609, -76.36749, -76.38683, 
+-76.41547, -76.51791, -76.61978, -76.71235, -76.80493, -76.75833, -76.70229, -76.68335, -76.72965, -76.66412, 
+-76.5706, -76.47714, -76.38378, -76.30909, -76.2904)
+                  END_OBJECT = GRingPointLongitude
+                  OBJECT = GRingPointLatitude
+                     NUM_VAL = 25
+                     CLASS = "2"
+                     VALUE = (39.55945, 39.48733, 39.4657, 39.408, 39.35752, 39.30704, 39.24935, 39.19166, 39.10512, 39.01858, 
+38.93204, 38.9032, 38.93925, 38.98973, 39.033, 39.10512, 39.17723, 39.25656, 39.33589, 39.40079, 
+39.45127, 39.49454, 39.52339, 39.54502, 39.55223)
+                  END_OBJECT = GRingPointLatitude
+                  OBJECT = GRingPointSequenceNo
+                     NUM_VAL = 25
+                     CLASS = "2"
+                      VALUE = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 
+11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 
+21, 22, 23, 24, 25)
+                  END_OBJECT = GRingPointSequenceNo
+               END_GROUP = GRingPoint
+            END_OBJECT = GPolygonContainer
+            OBJECT = GPolygonContainer
+               CLASS = "3"
+               GROUP = GRing
+                  CLASS = "3"
+                  OBJECT = ExclusionGRingFlag
+                     NUM_VAL = 1
+                     CLASS = "3"
+                     VALUE = "Y"
+                  END_OBJECT = ExclusionGRingFlag
+               END_GROUP = GRing
+               GROUP = GRingPoint
+                  CLASS = "3"
+                  OBJECT = GRingPointLongitude
+                     NUM_VAL = 38
+                     CLASS = "3"
+                     VALUE = (-76.77724, -76.68471, -76.59222, -76.49035, -76.37909, -76.26773, -76.1656, -76.06346, -75.96128, -75.85917, 
+-75.75705, -75.66459, -75.56262, -75.5268, -75.52849, -75.52087, -75.5133, -75.49655, -75.47051, -75.45378, 
+-75.55531, -75.63763, -75.72002, -75.79319, -75.86638, -75.94893, -76.02227, -76.10493, -76.17837, -76.25188, 
+-76.3347, -76.40833, -76.49126, -76.56502, -76.64811, -76.72198, -76.75879, -76.76802)
+                  END_OBJECT = GRingPointLongitude
+                  OBJECT = GRingPointLatitude
+                     NUM_VAL = 38
+                     CLASS = "3"
+                     VALUE = (38.98252, 38.93925, 38.88877, 38.85993, 38.83829, 38.81666, 38.79502, 38.77339, 38.75175, 38.72291, 
+38.69406, 38.64358, 38.60752, 38.5282, 38.44166, 38.35512, 38.26858, 38.18204, 38.0955, 38.00897, 
+38.0306, 38.08829, 38.14598, 38.20368, 38.26137, 38.31906, 38.37675, 38.43445, 38.49214, 38.54983, 
+38.60752, 38.66522, 38.72291, 38.7806, 38.83829, 38.88877, 38.95368, 38.9681)
+                  END_OBJECT = GRingPointLatitude
+                  OBJECT = GRingPointSequenceNo
+                     NUM_VAL = 38
+                     CLASS = "3"
+                      VALUE = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 
+11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 
+21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 
+31, 32, 33, 34, 35, 36, 37, 38)
+                  END_OBJECT = GRingPointSequenceNo
+               END_GROUP = GRingPoint
+            END_OBJECT = GPolygonContainer
+         END_GROUP = GPolygon
+      END_GROUP = HorizontalSpatialDomainContainer
+   END_GROUP = SpatialDomainContainer
+   GROUP = CollectionDescriptionClass
+      OBJECT = ShortName
+         NUM_VAL = 1
+         VALUE = "ILATM1B"
+      END_OBJECT = ShortName
+      OBJECT = VersionID
+         NUM_VAL = 1
+         VALUE = 1
+      END_OBJECT = VersionID
+   END_GROUP = CollectionDescriptionClass
+   GROUP = RangeDateTime
+      OBJECT = RangeBeginningDate
+         NUM_VAL = 1
+         VALUE = "2010-04-30"
+      END_OBJECT = RangeBeginningDate
+      OBJECT = RangeBeginningTime
+         NUM_VAL = 1
+         VALUE = "09:11:45.4200"
+      END_OBJECT = RangeBeginningTime
+      OBJECT = RangeEndingDate
+         NUM_VAL = 1
+         VALUE = "2010-04-30"
+      END_OBJECT = RangeEndingDate
+      OBJECT = RangeEndingTime
+         NUM_VAL = 1
+         VALUE = "10:11:44.9900"
+      END_OBJECT = RangeEndingTime
+   END_GROUP = RangeDateTime
+   GROUP = Campaign
+      OBJECT = CampaignShortName
+         NUM_VAL = 1
+         VALUE = ""
+      END_OBJECT = CampaignShortName
+   END_GROUP = Campaign
+   GROUP = AssociatedPlatformInstrumentSensor
+      OBJECT = AssociatedPlatformInstrumentSensorContainer
+         CLASS = "1"
+         OBJECT = AssociatedPlatformShortName
+           CLASS = "1"
+           NUM_VAL = 1
+           VALUE = "P-3B"
+         END_OBJECT = AssociatedPlatformShortName
+         OBJECT = AssociatedInstrumentShortName
+           CLASS = "1"
+           NUM_VAL = 1
+           VALUE = "ATM"
+         END_OBJECT = AssociatedInstrumentShortName
+         OBJECT = AssociatedSensorShortName
+           CLASS = "1"
+           NUM_VAL = 1
+           VALUE = "ATM"
+         END_OBJECT = AssociatedSensorShortName
+      END_OBJECT = AssociatedPlatformInstrumentSensorContainer
+   END_GROUP = AssociatedPlatformInstrumentSensor
+   GROUP = AdditionalAttributes
+      OBJECT = AdditionalAttributesContainer
+         CLASS = "1"
+         OBJECT = AdditionalAttributeName
+            CLASS = "1"
+            NUM_VAL = 1
+            VALUE = "SIPSMetGenVersion"
+         END_OBJECT = AdditionalAttributeName
+         GROUP = InformationContent
+            CLASS = "1"
+            OBJECT = ParameterValue
+               NUM_VAL = 1
+               VALUE = "2.0.1"
+            END_OBJECT = ParameterValue
+         END_GROUP = InformationContent
+      END_OBJECT = AdditionalAttributesContainer
+      OBJECT = AdditionalAttributesContainer
+         CLASS = "2"
+         OBJECT = AdditionalAttributeName
+            CLASS = "2"
+            NUM_VAL = 1
+            VALUE = "ThemeID"
+         END_OBJECT = AdditionalAttributeName
+         GROUP = InformationContent
+            CLASS = "2"
+            OBJECT = ParameterValue
+               NUM_VAL = 1
+               VALUE = "2010_GR_NASA"
+            END_OBJECT = ParameterValue
+         END_GROUP = InformationContent
+      END_OBJECT = AdditionalAttributesContainer
+      OBJECT = AdditionalAttributesContainer
+         CLASS = "3"
+         OBJECT = AdditionalAttributeName
+            CLASS = "3"
+            NUM_VAL = 1
+            VALUE = "AircraftID"
+         END_OBJECT = AdditionalAttributeName
+         GROUP = InformationContent
+            CLASS = "3"
+            OBJECT = ParameterValue
+               NUM_VAL = 1
+               VALUE = "NA72473"
+            END_OBJECT = ParameterValue
+         END_GROUP = InformationContent
+      END_OBJECT = AdditionalAttributesContainer
+   END_GROUP = AdditionalAttributes
+END_GROUP = INVENTORYMETADATA
+END
