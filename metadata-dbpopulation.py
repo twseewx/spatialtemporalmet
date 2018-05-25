@@ -68,7 +68,7 @@ def configDBEngine():
 #connect to database
 engine = configDBEngine()
 #using pandas and glob get all 
-campaign = 'discoveraq-ca'
+#campaign = 'discoveraq-ca'
 campaignlatmin=90.0
 campaignlatmax=-90.0
 campaignlonmin=180.0
@@ -80,6 +80,7 @@ def getcolumns(index):
     lon = longitude[campaign[index]]
     alt = altitude[campaign[index]]
     return lat,lon,alt
+#Still need to handle conversion of ft to m!
 
 def changedir(index):
     os.chdir(path+campaign[index])
@@ -93,32 +94,60 @@ def getyyyymmdd(filename):
     yyyymmdd=filename.split('_')[2]
     return yyyymmdd
 
-def minmaxlatlon(dataframe):
-    minlat = np.nanmin(dataframe[:,1])
-    maxlat = np.nanmax(dataframe[:,1])
-    minlon = np.nanmin(dataframe[:,0])
-    maxlon = np.nanmax(dataframe[:,0])
-    return minlon,minlat,maxlon,maxlat
+def minmaxlatlon(matrix):
+    minlat = np.nanmin(matrix[:,1])
+    maxlat = np.nanmax(matrix[:,1])
+    minlon = np.nanmin(matrix[:,0])
+    maxlon = np.nanmax(matrix[:,0])
+    boundingbox = box(minlon,minlat,maxlon,maxlat)
+    return boundingbox
 
-def creategeomobjects(lat,lon,altitude,filename):
+def getflagvalue(file):
+    with open(file) as f:
+        for i in np.arange(6):
+            f.next()
+        flag = f.readline()[0]
+        return float(flag)
+    
+def removeflaggeddata(coordinates,dataflag):
+        coordinates = coordinates.replace(dataflag,np.NaN)
+        coordinates = coordinates[~np.isnan(coordinates).any(axis=1)]
+        return coordinates
+    
+    
+def createRDPobjects(coordinates,eps):
+    simplified = rdp(coordinates,epsilon = esp)
+    return simplified
+
+def creategeomobjects(lat,lon,alt,filename):
     
     for file in filename:
+        dataflag = getflagvalue(file)
         date = getyyyymmdd(file)
         header_line=open(file).readline().rstrip()
         try:
             num_header_lines=int(header_line.split(',')[0])
             split = ','
         except:
-            num_header_lines=int(header_line.sp,it(' ')[0])
+            num_header_lines=int(header_line.split(' ')[0])
             split = ' ' 
         if split == ',':
             dataframe = pd.read_csv(file,skiprows = (num_header_lines-1))
         else:
             dataframe = pd.read_csv(file, skiprows = (num_header_lines-1),
                                     delim_whitespace=True)
+        
         coordinates2D = dataframe.as_matrix(columns=[lon,lat])
+        boundingbox = minmaxlatlon(coordinates2D)
         coordinates3D = dataframe.as_matrix(columns=[lon,lat,alt])
-        minmaxlatlon(coordinates2D)
+        coordinates2D = removeflaggeddata(coordinates2D,dataflag)
+        coordinates3D = removeflaggeddata(coordinates3D,dataflag)
+        
+        rdp2D = createRDPobjects(coordinates2D,0.015)
+        rdp3D = createRDPobjects(coordinates3D,0.015)
+
+
+
 for filename in files:
     collat='Latitude'
     collon='Longitude'
