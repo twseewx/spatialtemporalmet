@@ -37,6 +37,26 @@ dbSecondaryTable='p3_min_seg2'
 dbserverPort='5432'
 #dbpassword=None
 dbpassword='gisguest'
+
+campaign = ['discoveraq-ca','discoveraq-co','discoveraq-md','discoveraq-tx',
+             'frappe','intext-b-c130','intex-b-dc8','intex-na','seac4rs']
+latitude = {'discoveraq-ca':'latitude','discoveraq-co':' FMS_LAT',
+            'discoveraq-md':'FMS_LAT','discoveraq-tx':' FMS_LAT',
+            'frappe':'GGLAT','intex-b-c130':'GGLAT',
+            'intex-b-dc8':'LATITUDE,','intex-na':'LATITUDE',
+            'seac4rs':'Latitude'}
+longitude = {'discoveraq-ca':'longitude','discoveraq-co':' FMS_LON',
+            'discoveraq-md':'FMS_LON','discoveraq-tx':' FMS_LON',
+            'frappe':'GGLON','intex-b-c130':'GGLON',
+            'intex-b-dc8':'LONGITUDE,','intex-na':'LONGITUDE',
+            'seac4rs':'Latitude'}
+altitude = {'discoveraq-ca':'altitude','discoveraq-co':' FMS_ALT_PRES',
+            'discoveraq-md':'FMS_ALT_PRES','discoveraq-tx':' FMS_ALT_PRES',
+            'frappe':'GGALT','intex-b-c130':'PALT',
+            'intex-b-dc8':'ALTITUDE_PRESSURE,','intex-na':'ALTITUDE_PRESSURE',
+            'seac4rs':'Pressure_Altitude'}
+path = '/Users/twsee/Desktop/NASA/Python/aircraft-metadata-db/Flight_Tracks/'
+
 #function for creating a DB network connection.
 def configDBEngine():
     #parse password from the database credential configuration file (dbcredentialFile)
@@ -53,6 +73,52 @@ campaignlatmin=90.0
 campaignlatmax=-90.0
 campaignlonmin=180.0
 campaignlonmax=-180.0
+
+
+def getcolumns(index):
+    lat = latitude[campaign[index]]
+    lon = longitude[campaign[index]]
+    alt = altitude[campaign[index]]
+    return lat,lon,alt
+
+def changedir(index):
+    os.chdir(path+campaign[index])
+    return None
+
+def gatherfiles():
+    files = glob.glob('*.[iI][cC][tT]')
+    return files
+
+def getyyyymmdd(filename):
+    yyyymmdd=filename.split('_')[2]
+    return yyyymmdd
+
+def minmaxlatlon(dataframe):
+    minlat = np.nanmin(dataframe[:,1])
+    maxlat = np.nanmax(dataframe[:,1])
+    minlon = np.nanmin(dataframe[:,0])
+    maxlon = np.nanmax(dataframe[:,0])
+    return minlon,minlat,maxlon,maxlat
+
+def creategeomobjects(lat,lon,altitude,filename):
+    
+    for file in filename:
+        date = getyyyymmdd(file)
+        header_line=open(file).readline().rstrip()
+        try:
+            num_header_lines=int(header_line.split(',')[0])
+            split = ','
+        except:
+            num_header_lines=int(header_line.sp,it(' ')[0])
+            split = ' ' 
+        if split == ',':
+            dataframe = pd.read_csv(file,skiprows = (num_header_lines-1))
+        else:
+            dataframe = pd.read_csv(file, skiprows = (num_header_lines-1),
+                                    delim_whitespace=True)
+        coordinates2D = dataframe.as_matrix(columns=[lon,lat])
+        coordinates3D = dataframe.as_matrix(columns=[lon,lat,alt])
+        minmaxlatlon(coordinates2D)
 for filename in files:
     collat='Latitude'
     collon='Longitude'
