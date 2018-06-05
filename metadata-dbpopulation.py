@@ -23,9 +23,9 @@ from geopandas import GeoDataFrame
 from shapely.geometry import Point, LineString, box
 import re
 #Open filename and parse down to header line number
-os.chdir('/Users/twsee/Desktop/NASA/Python/aircraft-metadata-db/Flight_Tracks/discoveraq-ca')
-files = glob.glob('*.[iI][cC][tT]')
-dbcredentialFile='~/.pgpass'
+#os.chdir('/Users/twsee/Desktop/NASA/Python/aircraft-metadata-db/Flight_Tracks/discoveraq-ca')
+#files = glob.glob('*.[iI][cC][tT]')
+#dbcredentialFile='~/.pgpass'
 #dbserver='dsrvr121.larc.nasa.gov'
 dbserver='localhost'
 database='aircraft_gis'
@@ -59,6 +59,11 @@ path = '/Users/twsee/Desktop/NASA/Python/aircraft-metadata-db/Flight_Tracks/'
 
 #function for creating a DB network connection.
 def configDBEngine():
+    dbserver='localhost'
+    database='aircraft_gis'
+    dblogin='postgres'
+    dbserverPort='5432'
+    dbPrimaryTable=''
     #parse password from the database credential configuration file (dbcredentialFile)
 #    pgpass = pd.read_csv(dbcredentialFile,header=None,names=['dbserver','port','database','login','password'],sep=':')
 #    dbpassword=pgpass.query('dbserver==\''+dbserver+'\' & login==\''+dblogin+'\'')['password'].item()
@@ -136,18 +141,25 @@ def creategeomobjects(lat,lon,alt,filename):
         else:
             dataframe = pd.read_csv(file, skiprows = (num_header_lines-1),
                                     delim_whitespace=True)
-        
+        dataframe = dataframe.replace(float(dataflag),np.NaN)
         coordinates2D = dataframe.as_matrix(columns=[lon,lat])
+        coordinates2D = coordinates2D[~np.isnan(dataframe).any(axis=1)]    
         boundingbox = minmaxlatlon(coordinates2D)
         coordinates3D = dataframe.as_matrix(columns=[lon,lat,alt])
+        coordinates3D = coordinates3D[~np.isnan(dataframe).any(axis=1)]
         coordinates2D = removeflaggeddata(coordinates2D,dataflag)
         coordinates3D = removeflaggeddata(coordinates3D,dataflag)
-        
+        every30thpoint = coordinates2D[::30]
+        every60thpoint = coordinates2D[::60]
         rdp2D = createRDPobjects(coordinates2D,0.015)
         rdp3D = createRDPobjects(coordinates3D,0.015)
 
-
-
+for index in np.arange(len(campaigns)):
+    changedir(index)
+    lat,lon,alt = getcolumns(index)
+    creategeomobjects()
+    
+    
 for filename in files:
     collat='Latitude'
     collon='Longitude'
