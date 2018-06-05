@@ -3,7 +3,8 @@
 """
 Created on Thu Dec 14 08:17:14 2017
 
-@author: twsee
+@author: Timothy See - timothy.w.see@nasa.gov or twsee6@gmail.com
+GitHub: https://github.com/twseewx/spatialtemporalmet
 """
 from __future__ import print_function
 import os
@@ -40,21 +41,26 @@ dbpassword='gisguest'
 
 campaign = ['discoveraq-ca','discoveraq-co','discoveraq-md','discoveraq-tx',
              'frappe','intext-b-c130','intex-b-dc8','intex-na','seac4rs']
-latitude = {'discoveraq-ca':'latitude','discoveraq-co':' FMS_LAT',
+latitude = {'discoveraq-ca':'Latitude','discoveraq-co':' FMS_LAT',
             'discoveraq-md':'FMS_LAT','discoveraq-tx':' FMS_LAT',
             'frappe':'GGLAT','intex-b-c130':'GGLAT',
             'intex-b-dc8':'LATITUDE,','intex-na':'LATITUDE',
             'seac4rs':'Latitude'}
-longitude = {'discoveraq-ca':'longitude','discoveraq-co':' FMS_LON',
+longitude = {'discoveraq-ca':'Longitude','discoveraq-co':' FMS_LON',
             'discoveraq-md':'FMS_LON','discoveraq-tx':' FMS_LON',
             'frappe':'GGLON','intex-b-c130':'GGLON',
             'intex-b-dc8':'LONGITUDE,','intex-na':'LONGITUDE',
             'seac4rs':'Latitude'}
-altitude = {'discoveraq-ca':'altitude','discoveraq-co':' FMS_ALT_PRES',
+altitude = {'discoveraq-ca':'Pressure_Altitude','discoveraq-co':' FMS_ALT_PRES',
             'discoveraq-md':'FMS_ALT_PRES','discoveraq-tx':' FMS_ALT_PRES',
             'frappe':'GGALT','intex-b-c130':'PALT',
             'intex-b-dc8':'ALTITUDE_PRESSURE,','intex-na':'ALTITUDE_PRESSURE',
             'seac4rs':'Pressure_Altitude'}
+conversion = {'discoveraq-ca':True,'discoveraq-co':True,
+            'discoveraq-md':True,'discoveraq-tx':True,
+            'frappe':False,'intex-b-c130':False,
+            'intex-b-dc8':False,'intex-na':False,
+            'seac4rs':True}
 path = '/Users/twsee/Desktop/NASA/Python/aircraft-metadata-db/Flight_Tracks/'
 
 #function for creating a DB network connection.
@@ -81,25 +87,85 @@ campaignlonmax=-180.0
 
 
 def getcolumns(index):
+    """
+        Gathers the associated lat,lon,alt column names
+
+        Parameters
+        ----------
+        arg1: int
+            index for dict referencing
+        
+        Returns 
+        -------
+        lat,lon,alt: strings
+        """
     lat = latitude[campaign[index]]
     lon = longitude[campaign[index]]
     alt = altitude[campaign[index]]
-    return lat,lon,alt
+    convert = conversion[campaign[index]]
+    return lat,lon,alt,convert
 #Still need to handle conversion of ft to m!
 
 def changedir(index):
+    """
+        uses an index to reference the proper path of input flight files
+
+        Parameters
+        ----------
+        arg1: int
+            index for dict referencing
+            
+        Returns
+        -------
+        None
+        """
     os.chdir(path+campaign[index])
     return None
 
 def gatherfiles():
+    """
+        Gathers the ICT files to be processed in each campaign directory
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        files: list
+        """
     files = glob.glob('*.[iI][cC][tT]')
     return files
 
 def getyyyymmdd(filename):
+    """
+        parses filename to get the year-month-day of the flight
+
+        Parameters
+        ----------
+        arg1: str
+           filename
+
+        Returns
+        -------
+        yyyymmdd: str
+        """
     yyyymmdd=filename.split('_')[2]
     return yyyymmdd
 
 def minmaxlatlon(matrix):
+    """
+        gets the min/max lat/lon to create a bounding box geometric object
+
+        Parameters
+        ----------
+        arg1: matrix
+           matrix of lat/lons for each flight
+
+        Returns
+        -------
+        boundingbox: geometric object
+        """
     minlat = np.nanmin(matrix[:,1])
     maxlat = np.nanmax(matrix[:,1])
     minlon = np.nanmin(matrix[:,0])
@@ -108,6 +174,19 @@ def minmaxlatlon(matrix):
     return boundingbox
 
 def getflagvalue(file):
+    """
+        gets flag values for representing bad data within the file
+
+        Parameters
+        ----------
+        arg1: file
+            filename 
+
+
+        Returns
+        -------
+        flag: float of the dataflag
+        """
     with open(file) as f:
         for i in np.arange(6):
             f.next()
@@ -115,17 +194,67 @@ def getflagvalue(file):
         return float(flag)
     
 def removeflaggeddata(coordinates,dataflag):
-        coordinates = coordinates.replace(dataflag,np.NaN)
-        coordinates = coordinates[~np.isnan(coordinates).any(axis=1)]
-        return coordinates
+    """
+        replaces the dataflags from getflagvalue() with np.nans then 
+        removes the nans from the coordinate pairs
+
+        Parameters
+        ----------
+        arg1: matrix
+            coordinate(lat/lon) from the dataset
+        arg2: float
+            dataflag representing the value of missing data
+
+        Returns
+        -------
+        coordinates with dataflags replaced then nans removed
+        """
+    coordinates = coordinates.replace(dataflag,np.NaN)
+    coordinates = coordinates[~np.isnan(coordinates).any(axis=1)]
+    return coordinates
     
     
 def createRDPobjects(coordinates,eps):
-    simplified = rdp(coordinates,epsilon = esp)
-    return simplified
+    """
+        Calls the RDP package to perform the line simplification algorithm
 
-def creategeomobjects(lat,lon,alt,filename):
+        Parameters
+        ----------
+        arg1: matrix
+           coordinate pairs used for simplification
+        arg2: float
+           the epsilon value, which controls the resolution of the 
+           simplification - small for higher res, larger for lower res
+
+        Returns
+        -------
+        geometric object that is the simplified line
+        """
+    simplified = rdp(coordinates,epsilon = eps)
+    return simplified
     
+def creategeomobjects(lat,lon,alt,filename,convert):
+    """
+        create the geometric objects for every30/60th points,
+        rdp2D and 3D, as well as the bounding box of the flight.
+        
+        Parameters
+        ----------
+        arg1: str
+            column header for latitude
+        arg2: str
+            column header for longitude
+        arg3: str
+            column header for altitude
+        arg4: list
+            list of all filenames with associated campaign/directory
+        arg5: boolean
+            True or False depending if the file needs converted from m-ft
+
+        Returns
+        -------
+        geometric object that is the simplified line
+        """
     for file in filename:
         dataflag = getflagvalue(file)
         date = getyyyymmdd(file)
@@ -142,6 +271,7 @@ def creategeomobjects(lat,lon,alt,filename):
             dataframe = pd.read_csv(file, skiprows = (num_header_lines-1),
                                     delim_whitespace=True)
         dataframe = dataframe.replace(float(dataflag),np.NaN)
+        
         coordinates2D = dataframe.as_matrix(columns=[lon,lat])
         coordinates2D = coordinates2D[~np.isnan(dataframe).any(axis=1)]    
         boundingbox = minmaxlatlon(coordinates2D)
@@ -153,11 +283,13 @@ def creategeomobjects(lat,lon,alt,filename):
         every60thpoint = coordinates2D[::60]
         rdp2D = createRDPobjects(coordinates2D,0.015)
         rdp3D = createRDPobjects(coordinates3D,0.015)
+        return boundingbox, every30thpoint, every60thpoint, rdp2D, rdp3D
 
-for index in np.arange(len(campaigns)):
+for index in np.arange(len(campaign)):
     changedir(index)
-    lat,lon,alt = getcolumns(index)
-    creategeomobjects()
+    files = gatherfiles()
+    lat,lon,alt,convert = getcolumns(index)
+    creategeomobjects(lat,lon,alt,files,convert)
     
     
 for filename in files:
