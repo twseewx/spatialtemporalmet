@@ -40,7 +40,7 @@ dbserverPort='5432'
 dbpassword='gisguest'
 
 campaign = ['discoveraq-ca','discoveraq-co','discoveraq-md','discoveraq-tx',
-             'frappe','intext-b-c130','intex-b-dc8','intex-na','seac4rs']
+             'frappe','intex-b-c130','intex-b-dc8','intex-na','seac4rs']
 latitude = {'discoveraq-ca':'Latitude','discoveraq-co':' FMS_LAT',
             'discoveraq-md':'FMS_LAT','discoveraq-tx':' FMS_LAT',
             'frappe':'GGLAT','intex-b-c130':'GGLAT',
@@ -69,7 +69,7 @@ def configDBEngine():
     database='aircraft_gis'
     dblogin='postgres'
     dbserverPort='5432'
-    dbPrimaryTable=''
+    dbPrimaryTable='flight_geometries'
     #parse password from the database credential configuration file (dbcredentialFile)
 #    pgpass = pd.read_csv(dbcredentialFile,header=None,names=['dbserver','port','database','login','password'],sep=':')
 #    dbpassword=pgpass.query('dbserver==\''+dbserver+'\' & login==\''+dblogin+'\'')['password'].item()
@@ -160,7 +160,7 @@ def minmaxlatlon(matrix):
         Parameters
         ----------
         arg1: matrix
-           matrix of lat/lons for each flight
+           2Dimensional - matrix of lat/lons for each flight
 
         Returns
         -------
@@ -189,7 +189,7 @@ def getflagvalue(file):
         """
     with open(file) as f:
         for i in np.arange(6):
-            f.next()
+            f.readline()
         flag = f.readline()[0]
         return float(flag)
     
@@ -270,20 +270,21 @@ def creategeomobjects(lat,lon,alt,filename,convert):
         else:
             dataframe = pd.read_csv(file, skiprows = (num_header_lines-1),
                                     delim_whitespace=True)
-        dataframe = dataframe.replace(float(dataflag),np.NaN)
-        
-        coordinates2D = dataframe.as_matrix(columns=[lon,lat])
-        coordinates2D = coordinates2D[~np.isnan(dataframe).any(axis=1)]    
-        boundingbox = minmaxlatlon(coordinates2D)
-        coordinates3D = dataframe.as_matrix(columns=[lon,lat,alt])
-        coordinates3D = coordinates3D[~np.isnan(dataframe).any(axis=1)]
-        coordinates2D = removeflaggeddata(coordinates2D,dataflag)
-        coordinates3D = removeflaggeddata(coordinates3D,dataflag)
+        coords2d = dataframe[[lon,lat]]
+        coords3d = dataframe[[lon,lat,alt]]
+        latlon = dataframe.as_matrix(columns=[lon,lat])
+#        coordinates2D = dataframe.as_matrix(columns=[lon,lat])
+#        coordinates2D = coordinates2D[~np.isnan(dataframe).any(axis=1)]    
+#        coordinates3D = dataframe.as_matrix(columns=[lon,lat,alt])
+#        coordinates3D = coordinates3D[~np.isnan(dataframe).any(axis=1)]
+        coordinates2D = removeflaggeddata(coords2d,dataflag)
+        coordinates3D = removeflaggeddata(coords3d,dataflag)
+        boundingbox = minmaxlatlon(latlon)
         every30thpoint = coordinates2D[::30]
         every60thpoint = coordinates2D[::60]
         rdp2D = createRDPobjects(coordinates2D,0.015)
         rdp3D = createRDPobjects(coordinates3D,0.015)
-        return boundingbox, every30thpoint, every60thpoint, rdp2D, rdp3D
+        return date, boundingbox, every30thpoint, every60thpoint, rdp2D, rdp3D
 
 for index in np.arange(len(campaign)):
     changedir(index)
@@ -292,47 +293,47 @@ for index in np.arange(len(campaign)):
     creategeomobjects(lat,lon,alt,files,convert)
     
     
-for filename in files:
-    collat='Latitude'
-    collon='Longitude'
-    colalt='GPS_Altitude'
-    time='Start_UTC'
-    file = str(filename)
-    splitfilename = file.split('_')
-    yyyymmdd=splitfilename[2]
-    epicSeconds=calendar.timegm(t.strptime(yyyymmdd,'%Y%m%d')) 
-    header=open(file).readline().rstrip()
-    header = int(header.split(',')[0])
-    fullres = pd.read_csv(file, skiprows=(header-1))
-    fullres = fullres.replace(-9999,np.NaN)
-    fullres[time]=fullres[time]+epicSeconds
-    fullresmet=fullres[[time,collat,collon,colalt]]
-    fullresmet['Date']=yyyymmdd
-    fullresmet['Campaign']=campaign
-    fullresmet.columns = ['Start_UTC','Latitude','Longitude','GPS_Altitude','Date','Campaign']
-#    fullres[colalt] = fullres[colalt]*0.3048 #convert f to m
-    Lat=fullres[collat]
-    Lon=fullres[collon]
-    Alt=fullres[colalt]
-#2D RDP simplification and representation of all columns from original DB(fullres)
-    coordinates = fullres.as_matrix(columns=[collat,collon])
-    fullresline = LineString(coordinates)
-    fullresbb = box(np.nanmin(coordinates[:,1]),np.nanmin(coordinates[:,0]),np.nanmax(coordinates[:,1]),np.nanmax(coordinates[:,0]))
-    rdpcoord = rdp(coordinates, epsilon = 0.015)
-    rdpline = LineString(rdpcoord)
-    simplifieddf = fullres.loc[fullres[collat].isin(rdpcoord[:,0]) & fullres[collon].isin(rdpcoord[:,1])]
-    noduplicatesdf = simplifieddf.drop_duplicates(collat)
-    noduplicatesdfmet=noduplicatesdf[[time,collat,collon,colalt]]
-    noduplicatesdfmet['Date']=yyyymmdd
-    noduplicatesdfmet['Campaign']=campaign
-    noduplicatesdfmet.columns = ['Start_UTC','Latitude','Longitude','GPS_Altitude','Date','Campaign']
-
-    rdplinebb = box(np.nanmin(rdpcoord[:,1]),np.nanmin(rdpcoord[:,0]),np.nanmax(rdpcoord[:,1]),np.nanmax(rdpcoord[:,0]))
-#3D RDP Simplification and representation of all columns from orgiginal DB(fullres)
-#Create LineString for 3D RDP, find the simplified fields and match for 
-    coord3d = fullres.as_matrix(columns=[collat,collon,colalt])
-    coord3dsimplified = rdp(coord3d, epsilon=0.015)
-    rdp3dline = LineString(coord3d)
+#for filename in files:
+#    collat='Latitude'
+#    collon='Longitude'
+#    colalt='GPS_Altitude'
+#    time='Start_UTC'
+#    file = str(filename)
+#    splitfilename = file.split('_')
+#    yyyymmdd=splitfilename[2]
+#    epicSeconds=calendar.timegm(t.strptime(yyyymmdd,'%Y%m%d')) 
+#    header=open(file).readline().rstrip()
+#    header = int(header.split(',')[0])
+#    fullres = pd.read_csv(file, skiprows=(header-1))
+#    fullres = fullres.replace(-9999,np.NaN)
+#    fullres[time]=fullres[time]+epicSeconds
+#    fullresmet=fullres[[time,collat,collon,colalt]]
+#    fullresmet['Date']=yyyymmdd
+#    fullresmet['Campaign']=campaign
+#    fullresmet.columns = ['Start_UTC','Latitude','Longitude','GPS_Altitude','Date','Campaign']
+##    fullres[colalt] = fullres[colalt]*0.3048 #convert f to m
+#    Lat=fullres[collat]
+#    Lon=fullres[collon]
+#    Alt=fullres[colalt]
+##2D RDP simplification and representation of all columns from original DB(fullres)
+#    coordinates = fullres.as_matrix(columns=[collat,collon])
+#    fullresline = LineString(coordinates)
+#    fullresbb = box(np.nanmin(coordinates[:,1]),np.nanmin(coordinates[:,0]),np.nanmax(coordinates[:,1]),np.nanmax(coordinates[:,0]))
+#    rdpcoord = rdp(coordinates, epsilon = 0.015)
+#    rdpline = LineString(rdpcoord)
+#    simplifieddf = fullres.loc[fullres[collat].isin(rdpcoord[:,0]) & fullres[collon].isin(rdpcoord[:,1])]
+#    noduplicatesdf = simplifieddf.drop_duplicates(collat)
+#    noduplicatesdfmet=noduplicatesdf[[time,collat,collon,colalt]]
+#    noduplicatesdfmet['Date']=yyyymmdd
+#    noduplicatesdfmet['Campaign']=campaign
+#    noduplicatesdfmet.columns = ['Start_UTC','Latitude','Longitude','GPS_Altitude','Date','Campaign']
+#
+#    rdplinebb = box(np.nanmin(rdpcoord[:,1]),np.nanmin(rdpcoord[:,0]),np.nanmax(rdpcoord[:,1]),np.nanmax(rdpcoord[:,0]))
+##3D RDP Simplification and representation of all columns from orgiginal DB(fullres)
+##Create LineString for 3D RDP, find the simplified fields and match for 
+#    coord3d = fullres.as_matrix(columns=[collat,collon,colalt])
+#    coord3dsimplified = rdp(coord3d, epsilon=0.015)
+#    rdp3dline = LineString(coord3d)
 #    simplified3ddf = fullres.loc[fullres[collat].isin(coord3dsimplified[:,0]) & fullres[collon].isin(coord3dsimplified[:,1]) & fullres[colalt].isin(coord3dsimplified[:,2])]
 #    simplified3ddfmet=simplified3ddf[[time,collat,collon,colalt]]
 #    simplified3ddfmet['Date']=yyyymmdd
