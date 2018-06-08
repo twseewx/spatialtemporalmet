@@ -7,20 +7,19 @@ Created on Thu Dec 14 08:17:14 2017
 GitHub: https://github.com/twseewx/spatialtemporalmet
 """
 from __future__ import print_function
+
 import os
-import mysql.connector
-from mysql.connector import errorcode
+#import mysql.connector
+#from mysql.connector import errorcode
 import pandas as pd
 import numpy as np
 from rdp import rdp
-import time as t
-import calendar
+#import time as t
+#import calendar
 import re
 import glob
-import psycopg2
-from geoalchemy2 import Geometry, WKTElement
 from sqlalchemy import create_engine
-from geopandas import GeoDataFrame
+#from geopandas import GeoDataFrame
 from shapely.geometry import Point, LineString, box
 import re
 #Open filename and parse down to header line number
@@ -76,14 +75,11 @@ def configDBEngine():
     #create sqlalchemy database connection
     engine = create_engine('postgresql+psycopg2://'+dblogin+':'+dbpassword+'@'+dbserver+':'+dbserverPort+'/'+database)
     return engine
-#connect to database
+
+
 engine = configDBEngine()
-#using pandas and glob get all 
-#campaign = 'discoveraq-ca'
-campaignlatmin=90.0
-campaignlatmax=-90.0
-campaignlonmin=180.0
-campaignlonmax=-180.0
+
+
 
 
 def getcolumns(index):
@@ -104,7 +100,9 @@ def getcolumns(index):
     alt = altitude[campaign[index]]
     convert = conversion[campaign[index]]
     return lat,lon,alt,convert
-#Still need to handle conversion of ft to m!
+
+
+
 
 def changedir(index):
     """
@@ -122,6 +120,9 @@ def changedir(index):
     os.chdir(path+campaign[index])
     return None
 
+
+
+
 def gatherfiles():
     """
         Gathers the ICT files to be processed in each campaign directory
@@ -136,6 +137,9 @@ def gatherfiles():
         """
     files = glob.glob('*.[iI][cC][tT]')
     return files
+
+
+
 
 def getyyyymmdd(filename):
     """
@@ -152,6 +156,9 @@ def getyyyymmdd(filename):
         """
     yyyymmdd=filename.split('_')[2]
     return yyyymmdd
+
+
+
 
 def minmaxlatlon(matrix):
     """
@@ -170,8 +177,12 @@ def minmaxlatlon(matrix):
     maxlat = np.nanmax(matrix[:,1])
     minlon = np.nanmin(matrix[:,0])
     maxlon = np.nanmax(matrix[:,0])
+    print(minlat,minlon,maxlat,maxlon)
     boundingbox = box(minlon,minlat,maxlon,maxlat)
     return boundingbox
+
+
+
 
 def getflagvalue(file):
     """
@@ -192,6 +203,9 @@ def getflagvalue(file):
             f.readline()
         flag = f.readline()[0]
         return float(flag)
+    
+    
+    
     
 def removeflaggeddata(coordinates,dataflag):
     """
@@ -214,6 +228,8 @@ def removeflaggeddata(coordinates,dataflag):
     return coordinates
     
     
+
+
 def createRDPobjects(coordinates,eps):
     """
         Calls the RDP package to perform the line simplification algorithm
@@ -233,6 +249,8 @@ def createRDPobjects(coordinates,eps):
     simplified = rdp(coordinates,epsilon = eps)
     return simplified
     
+
+
 def creategeomobjects(lat,lon,alt,filename,convert):
     """
         create the geometric objects for every30/60th points,
@@ -255,6 +273,7 @@ def creategeomobjects(lat,lon,alt,filename,convert):
         -------
         geometric object that is the simplified line
         """
+    print('started creategeomobjects')
     for file in filename:
         dataflag = getflagvalue(file)
         date = getyyyymmdd(file)
@@ -270,28 +289,49 @@ def creategeomobjects(lat,lon,alt,filename,convert):
         else:
             dataframe = pd.read_csv(file, skiprows = (num_header_lines-1),
                                     delim_whitespace=True)
-        coords2d = dataframe[[lon,lat]]
-        coords3d = dataframe[[lon,lat,alt]]
-        latlon = dataframe.as_matrix(columns=[lon,lat])
-#        coordinates2D = dataframe.as_matrix(columns=[lon,lat])
-#        coordinates2D = coordinates2D[~np.isnan(dataframe).any(axis=1)]    
-#        coordinates3D = dataframe.as_matrix(columns=[lon,lat,alt])
-#        coordinates3D = coordinates3D[~np.isnan(dataframe).any(axis=1)]
-        coordinates2D = removeflaggeddata(coords2d,dataflag)
-        coordinates3D = removeflaggeddata(coords3d,dataflag)
-        boundingbox = minmaxlatlon(latlon)
-        every30thpoint = coordinates2D[::30]
-        every60thpoint = coordinates2D[::60]
-        rdp2D = createRDPobjects(coordinates2D,0.015)
-        rdp3D = createRDPobjects(coordinates3D,0.015)
-        return date, boundingbox, every30thpoint, every60thpoint, rdp2D, rdp3D
+        print('started coords2d')
 
+        coords2d = dataframe[[lon,lat]]
+        print('starting coords3d')
+
+        coords3d = dataframe[[lon,lat,alt]]
+        print('started latlon')
+
+        latlon = dataframe.as_matrix(columns=[lon,lat])
+        print('starting coordinates2D')
+        coordinates2D = removeflaggeddata(coords2d,dataflag)
+        print('starting coordinates3D')
+        coordinates3D = removeflaggeddata(coords3d,dataflag)
+#        boundingbox = minmaxlatlon(latlon)
+        print('starting every30th')
+        every30thpoint = coordinates2D[::30]
+        print('starting everuy60th')
+        every60thpoint = coordinates2D[::60]
+        print('starting rdp2D')
+        rdp2D = createRDPobjects(coordinates2D,0.015)
+        print('starting rdp3D')
+        rdp3D = createRDPobjects(coordinates3D,0.015)
+        print(type(rdp3D))
+        print(rdp3D)
+        print('starting rdp2D linestring')
+        rdpline2D = LineString(rdp2D)
+        print('starting rdp3D linestring')
+        rdpline3D = LineString(rdp3D)
+        print('finished '+str(file))
+#        return date, boundingbox, every30thpoint, every60thpoint, rdp2D, rdp3D
+
+
+
+#def inserttracks(date,bb,thirty,sixty,rdp2D,rdp3D):
+#    statement = "INSERT INTO flight_geometries (campaign,Date,Every30Points,Every60Points,boundingbox,rdp2Dline,rdp3Dline) VALUES ("+date+", ST_GEOMFROMTEXT('"+bb+"',4326),ST_GEOMFROMTEXT('"+thirty+"',4326),ST_GEOMFROMTEXT('"+sixty+"',4326),ST_GEOMFROMTEXT('"+rdp2D+"',4326),ST_GEOMFROMTEXT('"+rdp3D+"',4326))"
+#    return statement
+    
 for index in np.arange(len(campaign)):
     changedir(index)
     files = gatherfiles()
     lat,lon,alt,convert = getcolumns(index)
     creategeomobjects(lat,lon,alt,files,convert)
-    
+    #statement = inserttracks(date, bb, thirty, sixty, rdp2d, rdp3d)
     
 #for filename in files:
 #    collat='Latitude'
