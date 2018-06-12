@@ -20,7 +20,8 @@ import re
 import glob
 from sqlalchemy import create_engine
 #from geopandas import GeoDataFrame
-from shapely.geometry import Point, LineString, box
+from shapely.wkt import loads
+from shapely.geometry import LineString, box
 import re
 #Open filename and parse down to header line number
 #os.chdir('/Users/twsee/Desktop/NASA/Python/aircraft-metadata-db/Flight_Tracks/discoveraq-ca')
@@ -65,7 +66,7 @@ path = '/Users/twsee/Desktop/NASA/Python/aircraft-metadata-db/Flight_Tracks/'
 #function for creating a DB network connection.
 def configDBEngine():
     dbserver='localhost'
-    database='aircraft_gis'
+    database='spatial_db'
     dblogin='postgres'
     dbserverPort='5432'
     dbPrimaryTable='flight_geometries'
@@ -249,9 +250,11 @@ def createRDPobjects(coordinates,eps):
     simplified = rdp(coordinates,epsilon = eps)
     return simplified
     
+def inserttracks(mission,date,thirty,sixty,rdp2D,rdp3D):
+    statement = ("INSERT INTO flight_geometries (campaign,date,every30points,every60points,rdp2dline,rdp3dline) VALUES ('"+str(mission)+"','"+str(date)+"',ST_GEOMFROMTEXT('"+thirty+"',4326),ST_GEOMFROMTEXT('"+sixty+"',4326),ST_GEOMFROMTEXT('"+rdp2D+"',4326),ST_GEOMFROMTEXT('"+rdp3D+"',4326))")
+    connection.execute(statement)
 
-
-def creategeomobjects(lat,lon,alt,filename,convert):
+def creategeomobjects(mission, lat,lon,alt,filename,convert):
     """
         create the geometric objects for every30/60th points,
         rdp2D and 3D, as well as the bounding box of the flight.
@@ -273,10 +276,10 @@ def creategeomobjects(lat,lon,alt,filename,convert):
         -------
         geometric object that is the simplified line
         """
-    print('started creategeomobjects')
     for file in filename:
         dataflag = getflagvalue(file)
         date = getyyyymmdd(file)
+        mission = mission.split('-')[0]
         header_line=open(file).readline().rstrip()
         try:
             num_header_lines=int(header_line.split(',')[0])
@@ -289,49 +292,37 @@ def creategeomobjects(lat,lon,alt,filename,convert):
         else:
             dataframe = pd.read_csv(file, skiprows = (num_header_lines-1),
                                     delim_whitespace=True)
-        print('started coords2d')
-
         coords2d = dataframe[[lon,lat]]
-        print('starting coords3d')
-
         coords3d = dataframe[[lon,lat,alt]]
-        print('started latlon')
-
-        latlon = dataframe.as_matrix(columns=[lon,lat])
-        print('starting coordinates2D')
         coordinates2D = removeflaggeddata(coords2d,dataflag)
-        print('starting coordinates3D')
         coordinates3D = removeflaggeddata(coords3d,dataflag)
+        latlon2d = coordinates2D.as_matrix(columns=[lon,lat])
+        latlon3d = coordinates3D.as_matrix(columns=[lon,lat,alt])
+
 #        boundingbox = minmaxlatlon(latlon)
-        print('starting every30th')
-        every30thpoint = coordinates2D[::30]
-        print('starting everuy60th')
-        every60thpoint = coordinates2D[::60]
-        print('starting rdp2D')
-        rdp2D = createRDPobjects(coordinates2D,0.015)
-        print('starting rdp3D')
-        rdp3D = createRDPobjects(coordinates3D,0.015)
-        print(type(rdp3D))
-        print(rdp3D)
-        print('starting rdp2D linestring')
-        rdpline2D = LineString(rdp2D)
-        print('starting rdp3D linestring')
-        rdpline3D = LineString(rdp3D)
-        print('finished '+str(file))
-#        return date, boundingbox, every30thpoint, every60thpoint, rdp2D, rdp3D
+        every30thpoint = str(LineString(latlon2d[::30]))
+        every60thpoint = str(LineString(latlon2d[::60]))
+        rdp2D = rdp(latlon2d,0.015)
+        rdp3D = rdp(latlon3d,0.015)
+        rdpline2D = str(LineString(rdp2D))
+        rdpline3D = str(LineString(rdp3D))
+#        wktrdp2d = rdpline2D.wkt
+#        wktrdp3d = rdpline3D.wkt
+        inserttracks(mission, date,every30thpoint,every60thpoint,rdpline2D,rdpline3D)
 
 
+# do not forget to add bounding box back in - ST_GEOMFROMTEXT('"+bb+"',4326)
+# the statement greatly needs the bounding box input
 
-#def inserttracks(date,bb,thirty,sixty,rdp2D,rdp3D):
-#    statement = "INSERT INTO flight_geometries (campaign,Date,Every30Points,Every60Points,boundingbox,rdp2Dline,rdp3Dline) VALUES ("+date+", ST_GEOMFROMTEXT('"+bb+"',4326),ST_GEOMFROMTEXT('"+thirty+"',4326),ST_GEOMFROMTEXT('"+sixty+"',4326),ST_GEOMFROMTEXT('"+rdp2D+"',4326),ST_GEOMFROMTEXT('"+rdp3D+"',4326))"
-#    return statement
-    
+engine = configDBEngine()
+connection = engine.connect()
 for index in np.arange(len(campaign)):
+    mission = campaign[index]
     changedir(index)
     files = gatherfiles()
     lat,lon,alt,convert = getcolumns(index)
-    creategeomobjects(lat,lon,alt,files,convert)
-    #statement = inserttracks(date, bb, thirty, sixty, rdp2d, rdp3d)
+    creategeomobjects(mission,lat,lon,alt,files,convert)
+    
     
 #for filename in files:
 #    collat='Latitude'

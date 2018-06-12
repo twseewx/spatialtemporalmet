@@ -3,6 +3,8 @@
 To install necessary packages for python run:
 `pip install -r requirements.txt`
 
+A known issue is that if the `geos` package was installed with homebrew, it will cause some issues with the use of the `Shapely` package within python. 
+
 Then run `create_db.sh` to install the necessary postGIS enabled database and associated tables. 
 
 The `aircraftmetadata.py` script uses flight tracks within this directory structure to populate a database that has boundingboxes, 30second, 60second, and line simplification algorithm(2D and 3D) generated flight tracks for investigation of database search metrics. 
