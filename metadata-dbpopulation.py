@@ -185,7 +185,7 @@ def minmaxlatlon(matrix):
 
 
 
-def getflagvalue(file):
+def getflagvalue(file,split):
     """
         gets flag values for representing bad data within the file
 
@@ -200,9 +200,9 @@ def getflagvalue(file):
         flag: float of the dataflag
         """
     with open(file) as f:
-        for i in np.arange(6):
+        for i in np.arange(11):
             f.readline()
-        flag = f.readline()[0]
+        flag = f.readline().split(split)[0]
         return float(flag)
     
     
@@ -224,8 +224,9 @@ def removeflaggeddata(coordinates,dataflag):
         -------
         coordinates with dataflags replaced then nans removed
         """
-    coordinates = coordinates.replace(dataflag,np.NaN)
+    coordinates = coordinates.replace(float(dataflag),np.NaN)
     coordinates = coordinates[~np.isnan(coordinates).any(axis=1)]
+    print(np.min(coordinates))
     return coordinates
     
     
@@ -250,8 +251,8 @@ def createRDPobjects(coordinates,eps):
     simplified = rdp(coordinates,epsilon = eps)
     return simplified
     
-def inserttracks(mission,date,thirty,sixty,rdp2D,rdp3D):
-    statement = ("INSERT INTO flight_geometries (campaign,date,every30points,every60points,rdp2dline,rdp3dline) VALUES ('"+str(mission)+"','"+str(date)+"',ST_GEOMFROMTEXT('"+thirty+"',4326),ST_GEOMFROMTEXT('"+sixty+"',4326),ST_GEOMFROMTEXT('"+rdp2D+"',4326),ST_GEOMFROMTEXT('"+rdp3D+"',4326))")
+def inserttracks(mission,date,bb,thirty,sixty,rdp2D,rdp3D):
+    statement = ("INSERT INTO flight_geometries (campaign,date,boundingbox, every30points,every60points,rdp2dline,rdp3dline) VALUES ('"+str(mission)+"','"+str(date)+"',ST_GEOMFROMTEXT('"+bb+"',4326),ST_GEOMFROMTEXT('"+thirty+"',4326),ST_GEOMFROMTEXT('"+sixty+"',4326),ST_GEOMFROMTEXT('"+rdp2D+"',4326),ST_GEOMFROMTEXT('"+rdp3D+"',4326))")
     connection.execute(statement)
 
 def creategeomobjects(mission, lat,lon,alt,filename,convert):
@@ -277,9 +278,8 @@ def creategeomobjects(mission, lat,lon,alt,filename,convert):
         geometric object that is the simplified line
         """
     for file in filename:
-        dataflag = getflagvalue(file)
         date = getyyyymmdd(file)
-        mission = mission.split('-')[0]
+        print(date)
         header_line=open(file).readline().rstrip()
         try:
             num_header_lines=int(header_line.split(',')[0])
@@ -292,14 +292,14 @@ def creategeomobjects(mission, lat,lon,alt,filename,convert):
         else:
             dataframe = pd.read_csv(file, skiprows = (num_header_lines-1),
                                     delim_whitespace=True)
+        dataflag = getflagvalue(file,split)
         coords2d = dataframe[[lon,lat]]
         coords3d = dataframe[[lon,lat,alt]]
         coordinates2D = removeflaggeddata(coords2d,dataflag)
         coordinates3D = removeflaggeddata(coords3d,dataflag)
         latlon2d = coordinates2D.as_matrix(columns=[lon,lat])
         latlon3d = coordinates3D.as_matrix(columns=[lon,lat,alt])
-
-#        boundingbox = minmaxlatlon(latlon)
+        boundingbox = str(minmaxlatlon(latlon2d))
         every30thpoint = str(LineString(latlon2d[::30]))
         every60thpoint = str(LineString(latlon2d[::60]))
         rdp2D = rdp(latlon2d,0.015)
@@ -308,7 +308,7 @@ def creategeomobjects(mission, lat,lon,alt,filename,convert):
         rdpline3D = str(LineString(rdp3D))
 #        wktrdp2d = rdpline2D.wkt
 #        wktrdp3d = rdpline3D.wkt
-        inserttracks(mission, date,every30thpoint,every60thpoint,rdpline2D,rdpline3D)
+        inserttracks(mission,date,boundingbox,every30thpoint,every60thpoint,rdpline2D,rdpline3D)
 
 
 # do not forget to add bounding box back in - ST_GEOMFROMTEXT('"+bb+"',4326)
@@ -317,6 +317,7 @@ def creategeomobjects(mission, lat,lon,alt,filename,convert):
 engine = configDBEngine()
 connection = engine.connect()
 for index in np.arange(len(campaign)):
+    print(campaign[index])
     mission = campaign[index]
     changedir(index)
     files = gatherfiles()
