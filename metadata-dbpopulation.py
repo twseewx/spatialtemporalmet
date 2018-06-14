@@ -9,35 +9,15 @@ GitHub: https://github.com/twseewx/spatialtemporalmet
 from __future__ import print_function
 
 import os
-#import mysql.connector
-#from mysql.connector import errorcode
 import pandas as pd
 import numpy as np
 from rdp import rdp
-#import time as t
-#import calendar
 import re
 import glob
 from sqlalchemy import create_engine
-#from geopandas import GeoDataFrame
 from shapely.wkt import loads
 from shapely.geometry import LineString, box
 import re
-#Open filename and parse down to header line number
-#os.chdir('/Users/twsee/Desktop/NASA/Python/aircraft-metadata-db/Flight_Tracks/discoveraq-ca')
-#files = glob.glob('*.[iI][cC][tT]')
-#dbcredentialFile='~/.pgpass'
-#dbserver='dsrvr121.larc.nasa.gov'
-dbserver='localhost'
-database='aircraft_gis'
-#dblogin='taddev'
-dblogin='postgres'
-dbPrimaryTable='discoveraq_p3_pds4'
-dbSecondaryTable='p3_min_seg2'
-#dbserverPort='3070'
-dbserverPort='5432'
-#dbpassword=None
-dbpassword='gisguest'
 
 campaign = ['discoveraq-ca','discoveraq-co','discoveraq-md','discoveraq-tx',
              'frappe','intex-b-c130','intex-b-dc8','intex-na','seac4rs']
@@ -50,7 +30,7 @@ longitude = {'discoveraq-ca':'Longitude','discoveraq-co':' FMS_LON',
             'discoveraq-md':'FMS_LON','discoveraq-tx':' FMS_LON',
             'frappe':'GGLON','intex-b-c130':'GGLON',
             'intex-b-dc8':'LONGITUDE,','intex-na':'LONGITUDE',
-            'seac4rs':'Latitude'}
+            'seac4rs':'Longitude'}
 altitude = {'discoveraq-ca':'Pressure_Altitude','discoveraq-co':' FMS_ALT_PRES',
             'discoveraq-md':'FMS_ALT_PRES','discoveraq-tx':' FMS_ALT_PRES',
             'frappe':'GGALT','intex-b-c130':'PALT',
@@ -65,23 +45,18 @@ path = '/Users/twsee/Desktop/NASA/Python/aircraft-metadata-db/Flight_Tracks/'
 
 #function for creating a DB network connection.
 def configDBEngine():
+    """
+        function for creating the database connection
+        using SQL Alchemy package from python
+        
+    """
     dbserver='localhost'
     database='spatial_db'
     dblogin='postgres'
     dbserverPort='5432'
-    dbPrimaryTable='flight_geometries'
-    #parse password from the database credential configuration file (dbcredentialFile)
-#    pgpass = pd.read_csv(dbcredentialFile,header=None,names=['dbserver','port','database','login','password'],sep=':')
-#    dbpassword=pgpass.query('dbserver==\''+dbserver+'\' & login==\''+dblogin+'\'')['password'].item()
-    #create sqlalchemy database connection
+    dbpassword='gisguest'
     engine = create_engine('postgresql+psycopg2://'+dblogin+':'+dbpassword+'@'+dbserver+':'+dbserverPort+'/'+database)
     return engine
-
-
-engine = configDBEngine()
-
-
-
 
 def getcolumns(index):
     """
@@ -127,6 +102,7 @@ def changedir(index):
 def gatherfiles():
     """
         Gathers the ICT files to be processed in each campaign directory
+        gathered using glob
 
         Parameters
         ----------
@@ -144,7 +120,7 @@ def gatherfiles():
 
 def getyyyymmdd(filename):
     """
-        parses filename to get the year-month-day of the flight
+        parses filename to get the year-month-day of the flight 
 
         Parameters
         ----------
@@ -154,6 +130,7 @@ def getyyyymmdd(filename):
         Returns
         -------
         yyyymmdd: str
+        
         """
     yyyymmdd=filename.split('_')[2]
     return yyyymmdd
@@ -178,7 +155,6 @@ def minmaxlatlon(matrix):
     maxlat = np.nanmax(matrix[:,1])
     minlon = np.nanmin(matrix[:,0])
     maxlon = np.nanmax(matrix[:,0])
-    print(minlat,minlon,maxlat,maxlon)
     boundingbox = box(minlon,minlat,maxlon,maxlat)
     return boundingbox
 
@@ -226,32 +202,60 @@ def removeflaggeddata(coordinates,dataflag):
         """
     coordinates = coordinates.replace(float(dataflag),np.NaN)
     coordinates = coordinates[~np.isnan(coordinates).any(axis=1)]
-    print(np.min(coordinates))
     return coordinates
     
     
 
 
-def createRDPobjects(coordinates,eps):
-    """
-        Calls the RDP package to perform the line simplification algorithm
-
-        Parameters
-        ----------
-        arg1: matrix
-           coordinate pairs used for simplification
-        arg2: float
-           the epsilon value, which controls the resolution of the 
-           simplification - small for higher res, larger for lower res
-
-        Returns
-        -------
-        geometric object that is the simplified line
-        """
-    simplified = rdp(coordinates,epsilon = eps)
-    return simplified
+#def createRDPobjects(coordinates,eps):
+#    """
+#        Calls the RDP package to perform the line simplification algorithm
+#
+#        Parameters
+#        ----------
+#        arg1: matrix
+#           coordinate pairs used for simplification
+#        arg2: float
+#           the epsilon value, which controls the resolution of the 
+#           simplification - small for higher res, larger for lower res
+#
+#        Returns
+#        -------
+#        geometric object that is the simplified line
+#        """
+#    simplified = rdp(coordinates,epsilon = eps)
+#    return simplified
     
 def inserttracks(mission,date,bb,thirty,sixty,rdp2D,rdp3D):
+    """
+        This holds the statement for placing the flight tracks
+        into the database created, it inserts the information into the 
+        designated database associated with configDBengine() function above
+        
+        
+        Parameters
+        ----------
+        arg1: str
+            mission acronym associated with the flight
+        arg2: date
+            date of the flight
+        arg3: geometry
+            bounding box object to be placed into the database
+        arg4: geometry
+            every 30th datapoint of the original file as a linestring
+        arg5: geometry
+            every 60th datapoint of the original file as a linestring
+        arg6: geometry
+            the RDP line simplification algorithm output for 2dimensions
+        arg7: geometry
+            the RDP line simplification alrogithm output for 3dimensions
+            
+            
+        Returns
+        -------
+        None
+    """
+            
     statement = ("INSERT INTO flight_geometries (campaign,date,boundingbox, every30points,every60points,rdp2dline,rdp3dline) VALUES ('"+str(mission)+"','"+str(date)+"',ST_GEOMFROMTEXT('"+bb+"',4326),ST_GEOMFROMTEXT('"+thirty+"',4326),ST_GEOMFROMTEXT('"+sixty+"',4326),ST_GEOMFROMTEXT('"+rdp2D+"',4326),ST_GEOMFROMTEXT('"+rdp3D+"',4326))")
     connection.execute(statement)
 
@@ -275,11 +279,11 @@ def creategeomobjects(mission, lat,lon,alt,filename,convert):
 
         Returns
         -------
-        geometric object that is the simplified line
-        """
+        None
+    """
     for file in filename:
         date = getyyyymmdd(file)
-        print(date)
+        print("Creating Flight Tracks for date: "+date)
         header_line=open(file).readline().rstrip()
         try:
             num_header_lines=int(header_line.split(',')[0])
@@ -306,18 +310,15 @@ def creategeomobjects(mission, lat,lon,alt,filename,convert):
         rdp3D = rdp(latlon3d,0.015)
         rdpline2D = str(LineString(rdp2D))
         rdpline3D = str(LineString(rdp3D))
-#        wktrdp2d = rdpline2D.wkt
-#        wktrdp3d = rdpline3D.wkt
         inserttracks(mission,date,boundingbox,every30thpoint,every60thpoint,rdpline2D,rdpline3D)
+        print("Finished Inserting Flight Tracks for date: " +date)
 
 
-# do not forget to add bounding box back in - ST_GEOMFROMTEXT('"+bb+"',4326)
-# the statement greatly needs the bounding box input
 
 engine = configDBEngine()
 connection = engine.connect()
 for index in np.arange(len(campaign)):
-    print(campaign[index])
+    print('Starting Campaign: '+campaign[index])
     mission = campaign[index]
     changedir(index)
     files = gatherfiles()
@@ -325,133 +326,3 @@ for index in np.arange(len(campaign)):
     creategeomobjects(mission,lat,lon,alt,files,convert)
     
     
-#for filename in files:
-#    collat='Latitude'
-#    collon='Longitude'
-#    colalt='GPS_Altitude'
-#    time='Start_UTC'
-#    file = str(filename)
-#    splitfilename = file.split('_')
-#    yyyymmdd=splitfilename[2]
-#    epicSeconds=calendar.timegm(t.strptime(yyyymmdd,'%Y%m%d')) 
-#    header=open(file).readline().rstrip()
-#    header = int(header.split(',')[0])
-#    fullres = pd.read_csv(file, skiprows=(header-1))
-#    fullres = fullres.replace(-9999,np.NaN)
-#    fullres[time]=fullres[time]+epicSeconds
-#    fullresmet=fullres[[time,collat,collon,colalt]]
-#    fullresmet['Date']=yyyymmdd
-#    fullresmet['Campaign']=campaign
-#    fullresmet.columns = ['Start_UTC','Latitude','Longitude','GPS_Altitude','Date','Campaign']
-##    fullres[colalt] = fullres[colalt]*0.3048 #convert f to m
-#    Lat=fullres[collat]
-#    Lon=fullres[collon]
-#    Alt=fullres[colalt]
-##2D RDP simplification and representation of all columns from original DB(fullres)
-#    coordinates = fullres.as_matrix(columns=[collat,collon])
-#    fullresline = LineString(coordinates)
-#    fullresbb = box(np.nanmin(coordinates[:,1]),np.nanmin(coordinates[:,0]),np.nanmax(coordinates[:,1]),np.nanmax(coordinates[:,0]))
-#    rdpcoord = rdp(coordinates, epsilon = 0.015)
-#    rdpline = LineString(rdpcoord)
-#    simplifieddf = fullres.loc[fullres[collat].isin(rdpcoord[:,0]) & fullres[collon].isin(rdpcoord[:,1])]
-#    noduplicatesdf = simplifieddf.drop_duplicates(collat)
-#    noduplicatesdfmet=noduplicatesdf[[time,collat,collon,colalt]]
-#    noduplicatesdfmet['Date']=yyyymmdd
-#    noduplicatesdfmet['Campaign']=campaign
-#    noduplicatesdfmet.columns = ['Start_UTC','Latitude','Longitude','GPS_Altitude','Date','Campaign']
-#
-#    rdplinebb = box(np.nanmin(rdpcoord[:,1]),np.nanmin(rdpcoord[:,0]),np.nanmax(rdpcoord[:,1]),np.nanmax(rdpcoord[:,0]))
-##3D RDP Simplification and representation of all columns from orgiginal DB(fullres)
-##Create LineString for 3D RDP, find the simplified fields and match for 
-#    coord3d = fullres.as_matrix(columns=[collat,collon,colalt])
-#    coord3dsimplified = rdp(coord3d, epsilon=0.015)
-#    rdp3dline = LineString(coord3d)
-#    simplified3ddf = fullres.loc[fullres[collat].isin(coord3dsimplified[:,0]) & fullres[collon].isin(coord3dsimplified[:,1]) & fullres[colalt].isin(coord3dsimplified[:,2])]
-#    simplified3ddfmet=simplified3ddf[[time,collat,collon,colalt]]
-#    simplified3ddfmet['Date']=yyyymmdd
-#    simplified3ddfmet['Campaign']=campaign
-#    simplified3ddfmet.columns = ['Start_UTC','Latitude','Longitude','GPS_Altitude','Date','Campaign']
-#    rdp3dlinebb = box(np.nanmin(coord3dsimplified[:,1]),np.nanmin(coord3dsimplified[:,0]),np.nanmax(coord3dsimplified[:,1]),np.nanmax(coord3dsimplified[:,0]))
-#    
-##every 30th point representation, create LineString, create just metadata fields
-#    every30thpoint = fullres.iloc[::30,:]
-#    every30coord = every30thpoint.as_matrix(columns=[collat,collon])
-#    every30line = LineString(every30coord)
-#    every30thpointmet=every30thpoint[[time,collat,collon,colalt]]
-#    every30thpointmet['Date']=yyyymmdd
-#    every30thpointmet['Campaign']=campaign
-#    every30thpointmet.columns = ['Start_UTC','Latitude','Longitude','GPS_Altitude','Date','Campaign']
-#    every30linebb = box(np.nanmin(every30coord[:,1]),np.nanmin(every30coord[:,0]),np.nanmax(every30coord[:,1]),np.nanmax(every30coord[:,0]))
-##every 60th point representation, create linestring, create just metadata fields
-#    every60thpoint = fullres.iloc[::60,:]
-#    every60coord = every60thpoint.as_matrix(columns=[collat,collon])
-#    every60line = LineString(every60coord)
-#    every60thpointmet = every60thpoint[[time,collat,collon,colalt]]
-#    every60thpointmet['Date']=yyyymmdd
-#    every60thpointmet['Campaign']=campaign
-#    every60thpointmet.columns = ['Start_UTC','Latitude','Longitude','GPS_Altitude','Date','Campaign']
-#    every60linebb = box(np.nanmin(every60coord[:,1]),np.nanmin(every60coord[:,0]),np.nanmax(every60coord[:,1]),np.nanmax(every60coord[:,0]))
-#    wkbdata = {'Campaign':[campaign],
-#            'Date':[yyyymmdd],
-#            'FullRes':[fullresline.wkb],
-#            'FullRes-BB':[fullresbb.wkb],
-#            'Every30Points':[every30line.wkb],
-#            'Every30Points-BB':[every30linebb.wkb],
-#            'Every60Points':[every60line.wkb],
-#            'Every60Points-BB':[every60linebb.wkb],
-#            'Rdp2DLine':[rdpline.wkb],
-#            'Rdp2DLine-BB':[rdplinebb.wkb],
-#            'Rdp3DLine':[rdp3dline.wkb],
-#            'Rdp3DLine-BB':[rdp3dlinebb.wkb]}
-#    geomdata = {'Campaign':[campaign],
-#            'Date':[yyyymmdd],
-#            'FullRes':[fullresline.wkt],
-#            'FullRes-BB':[fullresbb.wkt],
-#            'Every30Points':[every30line.wkt],
-#            'Every30Points-BB':[every30linebb.wkt],
-#            'Every60Points':[every60line.wkt],
-#            'Every60Points-BB':[every60linebb.wkt],
-#            'Rdp2DLine':[rdpline.wkt],
-#            'Rdp2DLine-BB':[rdplinebb.wkt],
-#            'Rdp3DLine':[rdp3dline.wkt],
-#            'Rdp3DLine-BB':[rdp3dlinebb.wkt]}
-#    wkbdataframe = pd.DataFrame(wkbdata, index=None)
-#    geomdataframe = pd.DataFrame(geomdata, index=None)
-##print statement to denote what file is being worked on.
-#    if np.nanmin(fullres[collat]) < campaignlatmin:
-#        campaignlatmin = np.nanmin(fullres[collat])
-#    if np.nanmax(fullres[collat]) > campaignlatmax:
-#        campaignlatmax = np.nanmax(fullres[collat])
-#    if np.nanmin(fullres[collon]) < campaignlonmin:
-#        campaignlonmin = np.nanmin(fullres[collon])
-#    if np.nanmax(fullres[collon]) > campaignlonmax:
-#        campaignlonmax = np.nanmax(fullres[collon])
-#    print(filename)
-    
-    
-##TODO - figure out how to get the lines into the database and make sure
-##TODO - that they are in proper representation, seems like using GIS commands
-##TODO - in a postgis sql database is the best course of action.
-## Section below writes the data structures for each of the full res/30/60/2D/3D 
-## data with the associated original data for each simplified point.
-    
-#    fullres.to_sql((splitfilename[0]+'-'+splitfilename[1]+'-'+'fullres'),engine,if_exists='append',index=False)
-#    noduplicatesdf.to_sql((splitfilename[0]+'-'+splitfilename[1]+'-'+'2dsimplified'),engine,if_exists='append',index=False)
-#    simplified3ddf.to_sql((splitfilename[0]+'-'+splitfilename[1]+'-'+'3dsimplified'),engine,if_exists='append',index=False)
-#    every30thpoint.to_sql((splitfilename[0]+'-'+splitfilename[1]+'-'+'every30thpoint'),engine,if_exists='append',index=False)
-#    every60thpoint.to_sql((splitfilename[0]+'-'+splitfilename[1]+'-'+'every60thpoint'),engine,if_exists='append',index=False)
-    
-## Writes the well known binary and well known text geometry types to 
-## the SQL database.
-#    wkbdataframe.to_sql(('p3b_daily_flight_track_wkb'),engine,if_exists='append',index=False)
-#    geomdataframe.to_sql(('p3b_daily_flight_track_geom'),engine,if_exists='append',index=False)
-    
-#TODO - Get geom represented as linestring within the database, it will not let me populate
-#TODO with the linstring currently (20180109)
-    
-#THis populates the database with only associated metadata fields not all fields withint he nav datafile
-#    fullresmet.to_sql(('campaign-fullres-metadata'),engine,if_exists='append',index=False)
-#    noduplicatesdfmet.to_sql(('campaign-2dsimplified-metadata'),engine,if_exists='append',index=False)
-#    simplified3ddfmet.to_sql(('campaign-3dsimplified-metadata'),engine,if_exists='append',index=False)
-#    every30thpointmet.to_sql(('campaign-every30thpoint-metadata'),engine,if_exists='append',index=False)
-#    every60thpointmet.to_sql(('campaign-every60thpoint-metadata'),engine,if_exists='append',index=False)
