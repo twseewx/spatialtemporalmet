@@ -43,6 +43,16 @@ conversion = {'discoveraq-ca':True,'discoveraq-co':True,
             'seac4rs':True}
 path = '/Users/twsee/Desktop/NASA/Python/aircraft-metadata-db/Flight_Tracks/'
 
+def main():
+    engine = configDBEngine()
+    connection = engine.connect()
+    for index in np.arange(len(campaign)):
+        print('Starting Campaign: '+campaign[index])
+        mission = campaign[index]
+        changedir(index)
+        files = gatherfiles()
+        lat,lon,alt,convert = getcolumns(index)
+        creategeomobjects(mission,lat,lon,alt,files,convert)
 #function for creating a DB network connection.
 def configDBEngine():
     """
@@ -313,16 +323,5 @@ def creategeomobjects(mission, lat,lon,alt,filename,convert):
         inserttracks(mission,date,boundingbox,every30thpoint,every60thpoint,rdpline2D,rdpline3D)
         print("Finished Inserting Flight Tracks for date: " +date)
 
-
-
-engine = configDBEngine()
-connection = engine.connect()
-for index in np.arange(len(campaign)):
-    print('Starting Campaign: '+campaign[index])
-    mission = campaign[index]
-    changedir(index)
-    files = gatherfiles()
-    lat,lon,alt,convert = getcolumns(index)
-    creategeomobjects(mission,lat,lon,alt,files,convert)
-    
-    
+if __name__ == "__main__":
+    main()
