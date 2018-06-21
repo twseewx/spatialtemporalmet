@@ -52,7 +52,7 @@ def main():
         changedir(index)
         files = gatherfiles()
         lat,lon,alt,convert = getcolumns(index)
-        creategeomobjects(mission,lat,lon,alt,files,convert)
+        creategeomobjects(connection,mission,lat,lon,alt,files,convert)
 #function for creating a DB network connection.
 def configDBEngine():
     """
@@ -236,7 +236,7 @@ def removeflaggeddata(coordinates,dataflag):
 #    simplified = rdp(coordinates,epsilon = eps)
 #    return simplified
     
-def inserttracks(mission,date,bb,thirty,sixty,rdp2D,rdp3D):
+def inserttracks(connection,mission,date,bb,thirty,sixty,rdp2D,rdp3D):
     """
         This holds the statement for placing the flight tracks
         into the database created, it inserts the information into the 
@@ -269,7 +269,7 @@ def inserttracks(mission,date,bb,thirty,sixty,rdp2D,rdp3D):
     statement = ("INSERT INTO flight_geometries (campaign,date,boundingbox, every30points,every60points,rdp2dline,rdp3dline) VALUES ('"+str(mission)+"','"+str(date)+"',ST_GEOMFROMTEXT('"+bb+"',4326),ST_GEOMFROMTEXT('"+thirty+"',4326),ST_GEOMFROMTEXT('"+sixty+"',4326),ST_GEOMFROMTEXT('"+rdp2D+"',4326),ST_GEOMFROMTEXT('"+rdp3D+"',4326))")
     connection.execute(statement)
 
-def creategeomobjects(mission, lat,lon,alt,filename,convert):
+def creategeomobjects(connection,mission, lat,lon,alt,filename,convert):
     """
         create the geometric objects for every30/60th points,
         rdp2D and 3D, as well as the bounding box of the flight.
@@ -320,7 +320,7 @@ def creategeomobjects(mission, lat,lon,alt,filename,convert):
         rdp3D = rdp(latlon3d,0.015)
         rdpline2D = str(LineString(rdp2D))
         rdpline3D = str(LineString(rdp3D))
-        inserttracks(mission,date,boundingbox,every30thpoint,every60thpoint,rdpline2D,rdpline3D)
+        inserttracks(connection,mission,date,boundingbox,every30thpoint,every60thpoint,rdpline2D,rdpline3D)
         print("Finished Inserting Flight Tracks for date: " +date)
 
 if __name__ == "__main__":

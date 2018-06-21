@@ -1,10 +1,6 @@
 numpy
-psycopg2
 sqlalchemy
 pandas
 rdp
 shapely
-argparse
-os
-glob
-re
+glob2
