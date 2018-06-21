@@ -14,6 +14,7 @@ import numpy as np
 from rdp import rdp
 import re
 import glob
+import psycopg2
 from sqlalchemy import create_engine
 from shapely.wkt import loads
 from shapely.geometry import LineString, box
@@ -41,7 +42,7 @@ conversion = {'discoveraq-ca':True,'discoveraq-co':True,
             'frappe':False,'intex-b-c130':False,
             'intex-b-dc8':False,'intex-na':False,
             'seac4rs':True}
-path = '/Users/twsee/Desktop/NASA/Python/aircraft-metadata-db/Flight_Tracks/'
+path = os.getcwd()+'/Flight_Tracks/'
 
 def main():
     engine = configDBEngine()
