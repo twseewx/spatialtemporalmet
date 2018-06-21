@@ -2,5 +2,6 @@ numpy
 sqlalchemy
 pandas
 rdp
+psycopg2
 shapely
 glob2
