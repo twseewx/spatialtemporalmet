@@ -3,6 +3,8 @@
 To install necessary packages for python run:
 `pip install -r requirements.txt`
 
+Operating system must have PSQL installed, `create_db.sh` will use `pg_restore` in order to create the database for population.
+
 A known issue is that if the `geos` package was installed with homebrew, it will cause some issues with the use of the `Shapely` package within python. 
 
 Then run `create_db.sh` to install the necessary postGIS enabled database and associated tables. 
