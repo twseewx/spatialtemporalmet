@@ -6,6 +6,8 @@ Operating system must have Python3 and PSQL installed, `create_db.sh` will use `
 
 A known issue is that if the `geos` package was installed with homebrew, it will cause some issues with the use of the `Shapely` package within python. 
 
+Prior to running the repo, check to ensure that a `postgres` username is in present and has access to databases in the database that is being used. If not, within `run.sh` the username can be changed to the appropriate name. The postgres user does not have a password associated with it during script run.
+
 To run the entire repo `./run.sh`
 
 # Explanation of contents
